@@ -8,6 +8,7 @@ class BTreeNode:
     def insert_non_full(self, key):
         i = len(self.keys) - 1
         if self.leaf:
+             # Insert key directly if the node is a leaf
             self.keys.append(None)
             while i >= 0 and self.keys[i] > key:
                 self.keys[i + 1] = self.keys[i]
@@ -18,6 +19,7 @@ class BTreeNode:
                 i -= 1
             i += 1
             if len(self.children[i].keys) == 2 * self.t - 1:
+                # Split the child if it's full before inserting
                 self.split_child(i)
                 if self.keys[i] < key:
                     i += 1
@@ -34,11 +36,12 @@ class BTreeNode:
 
         if not y.leaf:
             z.children = y.children[self.t:(2 * self.t)]
-            y.children = y.children[0:self.t]
+            y.children = y.children[0:self.t] # Child to be split
 
     def remove(self, key):
-        idx = self.find_key(key)
+        idx = self.find_key(key) # Locate the key's index
         if idx < len(self.keys) and self.keys[idx] == key:
+             # Key found in this node
             if self.leaf:
                 self.remove_from_leaf(idx)
             else:
@@ -67,14 +70,17 @@ class BTreeNode:
     def remove_from_non_leaf(self, idx):
         key = self.keys[idx]
         if len(self.children[idx].keys) >= self.t:
+            # Use predecessor if left child has enough keys
             pred = self.get_pred(idx)
             self.keys[idx] = pred
             self.children[idx].remove(pred)
         elif len(self.children[idx + 1].keys) >= self.t:
+            # Use successor if right child has enough keys
             succ = self.get_succ(idx)
             self.keys[idx] = succ
             self.children[idx + 1].remove(succ)
         else:
+            # Merge with the left child if both siblings are deficient
             self.merge(idx)
             self.children[idx].remove(key)
 
@@ -146,10 +152,12 @@ class BTree:
 
     def insert(self, key):
         if self.root is None:
+            # Create a new root if the tree is empty
             self.root = BTreeNode(self.t, True)
             self.root.keys.append(key)
         else:
             if len(self.root.keys) == 2 * self.t - 1:
+                # Handle root splitting if it's full
                 s = BTreeNode(self.t, False)
                 s.children.append(self.root)
                 s.split_child(0)
@@ -163,10 +171,12 @@ class BTree:
 
     def remove(self, key):
         if not self.root:
+            # Tree is empty; nothing to remove
             print("The tree is empty")
             return
         self.root.remove(key)
         if len(self.root.keys) == 0:
+            # If root is empty after removal, update root
             tmp = self.root
             if self.root.leaf:
                 self.root = None
@@ -184,6 +194,7 @@ class BTree:
 
 # Example usage:
 degree = int(input("Enter degree of B-Tree:"))
+print("Min_Keys = degree - 1 = ", degree - 1)
 print("Max_Keys = 2 * degree - 1 = ", 2*degree-1 )
 btree = BTree(degree)
 
@@ -222,7 +233,6 @@ while True:
         
         else:
             print("Invalid choice! Please try again.")
-
 
 
 
